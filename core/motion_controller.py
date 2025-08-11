@@ -1,6 +1,6 @@
 from .types import Pose, Vector2
 from .math_utils import normalize_angle
-import math
+import math, time
 
 class DifferentialController:
     """
@@ -89,3 +89,14 @@ class DifferentialController:
 
         return (fwd + 10 - turn), (fwd + 10 + turn)  # (left_speed, right_speed)
     
+    def ball_velocity(self, ball, last_ball_pos, last_time):
+        current_time = time.time()
+        ball_vel = Vector2(0, 0)
+        if last_ball_pos is not None and last_time is not None:
+            dt = current_time - last_time
+            if dt > 0:
+                ball_vel = Vector2(
+                    (ball.position.x - last_ball_pos.x) / dt,
+                    (ball.position.y - last_ball_pos.y) / dt
+                    )
+        return ball_vel, current_time

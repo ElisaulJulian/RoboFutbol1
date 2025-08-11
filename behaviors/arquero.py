@@ -1,6 +1,7 @@
 from .behavior import Behavior
 from core.types import Vector2, Robot, Ball
 from core.math_utils import normalize_angle
+from core.motion_controller import DifferentialController
 import math, time
 
 class Arquero(Behavior):
@@ -27,6 +28,7 @@ class Arquero(Behavior):
         self.zone_min_y        = zone_min_y
         self.zone_max_y        = zone_max_y
         self.prediction_time   = prediction_time
+        self.controller        = DifferentialController(k_move, k_turn, -10, angle_threshold, angle_threshold*2)
 
         # Para calcular velocidad de la pelota
         self.last_ball_pos = None 
@@ -45,7 +47,7 @@ class Arquero(Behavior):
             # Calcular velocidad de la pelota
             ball_vel, self.last_time = self.controller.ball_velocity(ball, self.last_ball_pos, self.last_time)
             self.last_ball_pos = Vector2(ball.position.x, ball.position.y)
-            
+
             # Posición predicha
             predicted_pos = Vector2(
                 ball.position.x + ball_vel.x * self.prediction_time,
@@ -83,7 +85,7 @@ class Arquero(Behavior):
 
         # Ajuste si la pelota está muy cerca
         if ball and math.hypot(ball.position.x - pos.x, ball.position.y - pos.y) < 0.2:
-            forward = 30
+            forward = 60
 
         # Velocidades diferenciales
         left = forward - turn
