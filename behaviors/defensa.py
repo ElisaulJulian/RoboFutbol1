@@ -11,12 +11,10 @@ class Defensa(Behavior):
         self.controller = controller or DifferentialController()
 
     def step(self, robot: Robot, ball: Ball | None) -> tuple[float, float]:
-
-        
-        
         tarX = 0.4
         target = Vector2(tarX, ball.position.y)
 
         if ball is None:
             return 0.0, 0.0
         return self.controller.goto_point_lim(robot.pose, target)
+

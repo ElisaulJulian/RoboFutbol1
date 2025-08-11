@@ -43,18 +43,9 @@ class Arquero(Behavior):
             )
         else:
             # Calcular velocidad de la pelota
-            current_time = time.time()
-            ball_vel = Vector2(0, 0)
-            if self.last_ball_pos is not None and self.last_time is not None:
-                dt = current_time - self.last_time
-                if dt > 0:
-                    ball_vel = Vector2(
-                        (ball.position.x - self.last_ball_pos.x) / dt,
-                        (ball.position.y - self.last_ball_pos.y) / dt
-                    )
+            ball_vel, self.last_time = self.controller.ball_velocity(ball, self.last_ball_pos, self.last_time)
             self.last_ball_pos = Vector2(ball.position.x, ball.position.y)
-            self.last_time = current_time
-
+            
             # Posición predicha
             predicted_pos = Vector2(
                 ball.position.x + ball_vel.x * self.prediction_time,
