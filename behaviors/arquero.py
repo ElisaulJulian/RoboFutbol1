@@ -35,8 +35,6 @@ class Arquero(Behavior):
         self.last_time = None
 
     def step(self, robot: Robot, ball: Ball | None) -> tuple[float, float]:
-        pos = robot.pose.position
-
         # Si no hay pelota, volver al centro de la portería
         if ball is None:
             target = Vector2(
@@ -63,32 +61,4 @@ class Arquero(Behavior):
                 max(self.zone_min_y, min(self.zone_max_y, raw.y))
             )
 
-            # Ajustar k_move dinámicamente según la rapidez de la pelota
-            ball_speed = math.hypot(ball_vel.x, ball_vel.y)
-            dynamic_k_move = self.k_move + min(ball_speed * 50, 150)  # gana velocidad extra
-
-        # Calcular diferencias
-        dx = target.x - pos.x
-        dy = target.y - pos.y
-        dist = math.hypot(dx, dy)
-
-        target_angle = math.atan2(dy, dx)
-        err_ang = normalize_angle(target_angle - robot.pose.theta)
-
-        # Si no hay pelota, usar velocidad base. Si hay, usar dinámica.
-        forward_gain = dynamic_k_move if ball else self.k_move
-        turn_gain = self.k_turn
-
-        # Movimiento
-        forward = forward_gain * math.cos(err_ang) * dist
-        turn = turn_gain * err_ang
-
-        # Ajuste si la pelota está muy cerca
-        if ball and math.hypot(ball.position.x - pos.x, ball.position.y - pos.y) < 0.2:
-            forward = 60
-
-        # Velocidades diferenciales
-        left = forward - turn
-        right = forward + turn
-
-        return left, right
+        return self.controller.goto_point_goalie(robot.pose, target)
