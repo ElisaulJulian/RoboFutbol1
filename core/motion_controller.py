@@ -135,7 +135,7 @@ class DifferentialController:
         if abs(angle_err) > 1.5:  # casi pi rad
             if abs(dy) < 0.4 or abs(dx) < 0.75:
                 return -speed, -speed
-            return self.turn_180(turn_speed=25.0)
+            
 
         # Si la orientación está dentro de un umbral pequeño, avanza hacia Y
         if abs(angle_err) < 0.1:
