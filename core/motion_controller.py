@@ -1,6 +1,6 @@
 from .types import Pose, Vector2
 from .math_utils import normalize_angle
-import math
+import math, time
 
 class DifferentialController:
     """
@@ -89,3 +89,64 @@ class DifferentialController:
 
         return (fwd + 10 - turn), (fwd + 10 + turn)  # (left_speed, right_speed)
     
+    def ball_velocity(self, ball, last_ball_pos, last_time):
+        current_time = time.time()
+        ball_vel = Vector2(0, 0)
+        if last_ball_pos is not None and last_time is not None:
+            dt = current_time - last_time
+            if dt > 0:
+                ball_vel = Vector2(
+                    (ball.position.x - last_ball_pos.x) / dt,
+                    (ball.position.y - last_ball_pos.y) / dt
+                    )
+        return ball_vel, current_time
+
+    def turn_180(self, turn_speed: float = 10.0) -> tuple[float, float]:
+        # Rueda izquierda hacia adelante, rueda derecha hacia atrás para girar en sitio
+        left_speed = turn_speed
+        right_speed = -turn_speed
+        return left_speed, right_speed
+    
+    def goto_point_goalie(self, robot: Pose, target: Vector2, ball_pos) -> tuple[float, float]:
+        # Queremos que solo se mueva en Y, no en X 
+        dx = target.x - robot.position.x
+        dy = target.y - robot.position.y
+
+        # Queremos que el robot se oriente para avanzar hacia target.y
+        # Si la diferencia en Y es pequeña, para
+        y_threshold = 0.02
+        if abs(dy) < y_threshold:
+            return 0.0, 0.0
+
+        # Definimos hacia dónde debería estar mirando el robot para avanzar hacia target en Y
+        # Si dy > 0, debería mirar 90 grados (pi/2), si dy < 0, -90 grados (-pi/2)
+        desired_theta = math.pi / 2 if dy > 0 else -math.pi / 2
+
+        angle_err = normalize_angle(desired_theta - robot.theta)
+
+        #robot arriba ,pelota abajo -180
+        #robot abajo pelota arriba 180 
+        
+        # Inversamente proporcional a dx
+        min_dx = 0.01
+        inv_dx = 1 / (max(abs(dx), min_dx)*2)
+        velocity_y = max(abs(dy), 0.2)
+
+        speed = self.k_forward * velocity_y * inv_dx
+        speed = abs(speed)
+
+        # Si está mirando en la dirección contraria (ángulo cercano a +-pi), gira 180
+        if abs(angle_err) > math.pi / 2:  # casi pi rad
+            if ball_pos is None:
+                return 0,0
+            if ball_pos.x > 0:
+                return -speed, -speed
+            return self.turn_180(turn_speed=30.0)
+
+        # Si la orientación está dentro de un umbral pequeño, avanza hacia Y
+        if abs(angle_err) < 0.1:
+            return speed, speed
+
+        # Si no está bien orientado pero no está para girar 180, corrige girando suavemente
+        turn = self.k_turn * angle_err
+        return (5 - turn, 5 + turn)
