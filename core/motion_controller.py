@@ -107,8 +107,8 @@ class DifferentialController:
         right_speed = -turn_speed
         return left_speed, right_speed
     
-    def goto_point_goalie(self, robot: Pose, target: Vector2) -> tuple[float, float]:
-        # Queremos que solo se mueva en Y, no en X
+    def goto_point_goalie(self, robot: Pose, target: Vector2, ball_pos) -> tuple[float, float]:
+        # Queremos que solo se mueva en Y, no en X 
         dx = target.x - robot.position.x
         dy = target.y - robot.position.y
 
@@ -123,6 +123,9 @@ class DifferentialController:
         desired_theta = math.pi / 2 if dy > 0 else -math.pi / 2
 
         angle_err = normalize_angle(desired_theta - robot.theta)
+
+        #robot arriba ,pelota abajo -180
+        #robot abajo pelota arriba 180 
         
         # Inversamente proporcional a dx
         min_dx = 0.01
@@ -130,12 +133,15 @@ class DifferentialController:
         velocity_y = max(abs(dy), 0.2)
 
         speed = self.k_forward * velocity_y * inv_dx
+        speed = abs(speed)
 
         # Si está mirando en la dirección contraria (ángulo cercano a +-pi), gira 180
-        if abs(angle_err) > 1.5:  # casi pi rad
-            if abs(dy) < 0.4 or abs(dx) < 0.75:
+        if abs(angle_err) > math.pi / 2:  # casi pi rad
+            if ball_pos is None:
+                return 0,0
+            if ball_pos.x > 0:
                 return -speed, -speed
-            return self.turn_180(turn_speed=25.0)
+            return self.turn_180(turn_speed=30.0)
 
         # Si la orientación está dentro de un umbral pequeño, avanza hacia Y
         if abs(angle_err) < 0.1:

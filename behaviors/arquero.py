@@ -61,5 +61,5 @@ class Arquero(Behavior):
                 max(self.zone_min_y, min(self.zone_max_y, raw.y))
             )
 
-        return self.controller.goto_point_goalie(robot.pose, target)
+        return self.controller.goto_point_goalie(robot.pose, target, self.last_ball_pos)
     #c
