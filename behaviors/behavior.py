@@ -8,6 +8,8 @@ class Behavior(ABC):
     @abstractmethod
     def step(self, robot: Robot, ball: Ball | None) -> tuple[float, float]:
         """Devolve (left_speed, right_speed)."""
+
+    
     
 
     
