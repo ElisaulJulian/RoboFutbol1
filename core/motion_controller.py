@@ -150,3 +150,22 @@ class DifferentialController:
         # Si no está bien orientado pero no está para girar 180, corrige girando suavemente
         turn = self.k_turn * angle_err
         return (5 - turn, 5 + turn)
+
+    def reorientate(self, robot, angle_range:tuple[float, float]):
+        """
+        Reorienta al robot hasta que su ángulo esté dentro de un rango dado. 
+        angle_range: (min_angle, max_angle) en radianes
+        """
+        min_angle, max_angle = angle_range
+        theta = normalize_angle(robot.theta)
+
+        target_angle = (min_angle + max_angle)/2
+        angle_err = normalize_angle(target_angle - theta)
+
+        turn = self.k_turn*angle_err
+        return (5 - turn, 5 + turn)
+    
+    def ball_distance(self, robot_pose, ball):
+        dx = ball.x - robot_pose.position.x
+        dy = ball.y - robot_pose.position.y
+        return math.hypot(dx, dy)
