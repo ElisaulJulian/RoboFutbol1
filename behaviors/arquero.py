@@ -35,8 +35,8 @@ class Arquero(Behavior):
         self.last_time = None
 
     def step(self, robot: Robot, ball: Ball | None) -> tuple[float, float]:
-        min_angle = 5*math.pi/12
-        max_angle = 7*math.pi/12
+        min_angle = math.radians(75)
+        max_angle = math.radians(105)
         theta = normalize_angle(robot.pose.theta)
 
         # Si no hay pelota, volver al centro de la portería
@@ -67,7 +67,7 @@ class Arquero(Behavior):
 
         distancia = self.controller.ball_distance(robot.pose, self.last_ball_pos)
 
-        if (not min_angle <= abs(theta) <= max_angle) and (distancia > 0.5):
+        if (not min_angle <= theta <= max_angle) and (distancia > 0.75) and robot.pose.position.y < self.last_ball_pos.y:
             return self.controller.reorientate(robot.pose, (min_angle, max_angle))
 
         return self.controller.goto_point_goalie(robot.pose, target, self.last_ball_pos)

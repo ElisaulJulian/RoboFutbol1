@@ -115,7 +115,7 @@ class DifferentialController:
         # Queremos que el robot se oriente para avanzar hacia target.y
         # Si la diferencia en Y es pequeña, para
         y_threshold = 0.02
-        if abs(dy) < y_threshold:
+        if abs(dy) < y_threshold and abs(dx) < 0.4:
             return 0.0, 0.0
 
         # Definimos hacia dónde debería estar mirando el robot para avanzar hacia target en Y
@@ -165,7 +165,7 @@ class DifferentialController:
         target_angle = (min_angle + max_angle)/2
         angle_err = normalize_angle(target_angle - theta)
 
-        turn = 2*self.k_turn*angle_err
+        turn = self.k_turn*angle_err
         return (-turn, turn)
     
     def ball_distance(self, robot_pose, ball):
