@@ -40,11 +40,8 @@ class DifferentialController:
             ((-0.65, 0.44), (-0.55, -0.44))
         ]
 
-        def is_inside_zone(pos: Vector2, x1, y1, x2, y2):
-            return min(x1, x2) <= pos.x <= max(x1, x2) and min(y1, y2) <= pos.y <= max(y1, y2)
-
         for (x1, y1), (x2, y2) in forbidden_zones:
-            if is_inside_zone(target, x1, y1, x2, y2):
+            if self.is_inside_zone(target, x1, y1, x2, y2):
                 constrained_x = (
                     max(min(target.x, min(x1, x2)), max(x1, x2))
                     if x1 < x2
@@ -56,6 +53,9 @@ class DifferentialController:
             target.x = max(min(target.x, 0.66), -0.65)
 
         return target
+    
+    def is_inside_zone(self, pos: Vector2, x1, y1, x2, y2):
+            return min(x1, x2) <= pos.x <= max(x1, x2) and min(y1, y2) <= pos.y <= max(y1, y2)
 
 
     def goto_point_lim(self, robot: Pose, target: Vector2) -> tuple[float, float]:
@@ -87,7 +87,6 @@ class DifferentialController:
         right = max(-max_speed, min(max_speed, fwd + turn))
 
         return left, right
-
 
 
     def goto_point_HS(self, robot: Pose, target: Vector2) -> tuple[float, float]:
