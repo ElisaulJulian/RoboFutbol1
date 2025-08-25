@@ -12,8 +12,8 @@ class Arquero(Behavior):
         k_move: float = 90.0,  
         angle_threshold: float = 0.2,
         stop_tolerance: float = 0.02,
-        zone_min_x: float =  0.5,
-        zone_max_x: float =  0.51,
+        zone_min_x: float =  0.6,
+        zone_max_x: float =  0.7,
         zone_min_y: float = -0.4,
         zone_max_y: float =  0.4,
         prediction_time: float = 0.3
@@ -35,6 +35,10 @@ class Arquero(Behavior):
         self.last_time = None
 
     def step(self, robot: Robot, ball: Ball | None) -> tuple[float, float]:
+        min_angle = math.radians(75)
+        max_angle = math.radians(105)
+        theta = normalize_angle(robot.pose.theta)
+
         # Si no hay pelota, volver al centro de la portería
         if ball is None:
             target = Vector2(
@@ -61,5 +65,19 @@ class Arquero(Behavior):
                 max(self.zone_min_y, min(self.zone_max_y, raw.y))
             )
 
-        return self.controller.goto_point_goalie(robot.pose, target)
-    #c
+        distancia = self.controller.ball_distance(robot.pose, self.last_ball_pos)
+
+        is_inside_zone = self.controller.is_inside_zone(robot.pose.position, self.zone_min_x, self.zone_min_y, self.zone_max_x, self.zone_max_y)
+
+        if not is_inside_zone and (distancia > 0.3):
+            target2 = Vector2(
+                int((self.zone_min_x + self.zone_max_x) / 2), robot.pose.position.y
+            )
+           
+            return self.controller.goto_point(robot.pose, target2)
+
+        if (not min_angle <= theta <= max_angle) and (distancia > 0.75) and robot.pose.position.y < self.last_ball_pos.y:
+            return self.controller.reorientate(robot.pose, (min_angle, max_angle))
+
+        return self.controller.goto_point_goalie(robot.pose, target, self.last_ball_pos)
+    
