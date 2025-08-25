@@ -156,6 +156,9 @@ class DifferentialController:
         Reorienta al robot hasta que su ángulo esté dentro de un rango dado. 
         angle_range: (min_angle, max_angle) en radianes
         """
+        if not isinstance(robot, Pose):
+            raise TypeError("Robot pasado no es objeto tipo Pose")
+        
         min_angle, max_angle = angle_range
         theta = normalize_angle(robot.theta)
 
@@ -169,3 +172,4 @@ class DifferentialController:
         dx = ball.x - robot_pose.position.x
         dy = ball.y - robot_pose.position.y
         return math.hypot(dx, dy)
+ 
