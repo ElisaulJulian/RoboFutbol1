@@ -59,19 +59,34 @@ class DifferentialController:
 
 
     def goto_point_lim(self, robot: Pose, target: Vector2) -> tuple[float, float]:
-        target = self.constrain_target(target)
-
-        dx, dy = target.x - robot.position.x, target.y - robot.position.y
+        dx = target.x - robot.position.x
+        dy = target.y - robot.position.y
         distance = math.hypot(dx, dy)
         angle_to_target = math.atan2(dy, dx)
         angle_err = normalize_angle(angle_to_target - robot.theta)
 
-        if distance > self.stop_distance:
-            fwd = 0.0 if abs(angle_err) > self.angle_threshold2 else self.k_forward * distance
-            turn = self.k_turn * angle_err 
-            return (fwd + 10 - turn), (fwd + 10 + turn) 
+        # Si está muy cerca, ignora el giro y avanza fuerte para dar el tiro
+        if distance < 0.07:
+            fwd = self.k_forward * 0.7  # velocidad fuerte para tiro
+            turn = 0.0                  # no gira más, solo avanza
+        else:
+            # Permite avanzar embora o ângulo não seja perfeito, mas reduz a velocidade se estiver muito desalinhado
+            angle_factor = max(0.2, 1 - abs(angle_err) / math.pi)  # Entre 0.2 e 1 segundo o erro angular
+            fwd = self.k_forward * distance * angle_factor
 
-        return 0.0, 0.0
+            # Garante uma velocidade mínima se estiver longe
+            if distance > 0.05 and fwd < 10:
+                fwd = 20
+
+            # Controle de giro suave
+            turn = self.k_turn * angle_err
+
+        # Limita as velocidades máximas
+        max_speed = 100
+        left = max(-max_speed, min(max_speed, fwd - turn))
+        right = max(-max_speed, min(max_speed, fwd + turn))
+
+        return left, right
 
 
 
@@ -172,4 +187,3 @@ class DifferentialController:
         dx = ball.x - robot_pose.position.x
         dy = ball.y - robot_pose.position.y
         return math.hypot(dx, dy)
- 

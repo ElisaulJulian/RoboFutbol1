@@ -39,9 +39,9 @@ class Goleador(Behavior):
         # Si el robot está más adelantado que la pelota, retroceder
         if robot_pos.x <= ball_pos.x:
             if robot_pos.y < ball_pos.y:
-                retreat_target = Vector2(ball_pos.x + 0.4, ball_pos.y - 0.07)
+                retreat_target = Vector2(ball_pos.x + 0.5, ball_pos.y - 0.02)
             else:
-                retreat_target = Vector2(ball_pos.x + 0.04, ball_pos.y + 0.07)
+                retreat_target = Vector2(ball_pos.x + 0.5, ball_pos.y + 0.02)
             return self.controller.goto_point_lim(robot.pose, retreat_target)
 
         # Vector de dirección pelota → arco
