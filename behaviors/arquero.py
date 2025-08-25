@@ -66,8 +66,9 @@ class Arquero(Behavior):
             )
 
         distancia = self.controller.ball_distance(robot.pose, self.last_ball_pos)
+
         if (not min_angle <= abs(theta) <= max_angle) and (distancia > 0.5):
-            return self.controller.reorientate(robot, (min_angle, max_angle))
+            return self.controller.reorientate(robot.pose, (min_angle, max_angle))
 
         return self.controller.goto_point_goalie(robot.pose, target, self.last_ball_pos)
     
