@@ -1,7 +1,7 @@
 from .behavior import Behavior
 from core.motion_controller import DifferentialController
 from core.types import Robot, Ball, Vector2
-import math
+import math, random
 
 
 
@@ -27,7 +27,12 @@ class Goleador(Behavior):
             return 0.0, 0.0
         self.update_position(robot)
         # Posiciones clave
-        goal_position = Vector2(-1.1, 0.0)
+
+        goal_x = -1.1
+        goal_y_min = -0.5
+        goal_y_max = 0.5
+        goal_y = random.uniform(goal_y_min, goal_y_max)  # Aleatorio
+        goal_position = Vector2(goal_x, goal_y)
         ball_pos = ball.position
         robot_pos = robot.pose.position
 
