@@ -64,6 +64,12 @@ class DifferentialController:
         distance = math.hypot(dx, dy)
         angle_to_target = math.atan2(dy, dx)
         angle_err = normalize_angle(angle_to_target - robot.theta)
+        
+
+        if abs(angle_err) > 1.5:
+            turn = self.k_turn * angle_err
+            return -25,-25
+            
 
         # Si está muy cerca, ignora el giro y avanza fuerte para dar el tiro
         if distance < 0.07:
