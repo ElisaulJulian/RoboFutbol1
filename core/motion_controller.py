@@ -57,6 +57,13 @@ class DifferentialController:
     def is_inside_zone(self, pos: Vector2, x1, y1, x2, y2):
             return min(x1, x2) <= pos.x <= max(x1, x2) and min(y1, y2) <= pos.y <= max(y1, y2)
 
+    def in_angle_range(self, theta, angle1, angle2):
+            if theta >= 0:
+                return min(angle1, angle2) <= theta <= max(angle1, angle2)
+            else:
+                return max(angle1, angle2) >= theta <= min(angle1, angle2)
+
+
 
     def goto_point_lim(self, robot: Pose, target: Vector2) -> tuple[float, float]:
         dx = target.x - robot.position.x

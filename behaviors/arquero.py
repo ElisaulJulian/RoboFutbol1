@@ -65,15 +65,18 @@ class Arquero(Behavior):
                 max(self.zone_min_y, min(self.zone_max_y, raw.y))
             )
 
-        distancia = self.controller.ball_distance(robot.pose, self.last_ball_pos)
+        distancia = self.controller.ball_distance(robot.pose, self.last_ball_pos) if self.last_ball_pos else 0
 
         is_inside_zone = self.controller.is_inside_zone(robot.pose.position, self.zone_min_x, self.zone_min_y, self.zone_max_x, self.zone_max_y)
-
+        
         if not is_inside_zone and (distancia > 0.3):
-            target2 = Vector2(
-                int((self.zone_min_x + self.zone_max_x) / 2), robot.pose.position.y
-            )
-           
+            if robot.pose.position.y > 0.4:
+                target2 = Vector2(0.65, 0.35)
+            elif robot.pose.position.y < -0.4:
+                target2 = Vector2(0.65, 0.35)
+            else:
+                target2 = Vector2(0.65, robot.pose.position.y)
+
             return self.controller.goto_point(robot.pose, target2)
 
         if (not min_angle <= theta <= max_angle) and (distancia > 0.75) and robot.pose.position.y < self.last_ball_pos.y:
