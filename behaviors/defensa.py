@@ -3,13 +3,12 @@ from core.motion_controller import DifferentialController
 from core.types import Robot, Ball, Vector2
 import math
 
-
-
 class Defensa(Behavior):
     def __init__(self, controller: DifferentialController | None = None):
         self.controller = controller or DifferentialController()
         self.last_ball_pos = None
         self.last_time = None
+        self.modo_ataque = False
 
     def step(self, robot: Robot, ball: Ball | None) -> tuple[float, float]:
         import time
@@ -33,20 +32,36 @@ class Defensa(Behavior):
         self.last_ball_pos = Vector2(ball.position.x, ball.position.y)
         self.last_time = current_time
 
-        # Centro del arco propio (ajusta según tu campo)
-        arco_centro = Vector2(0.65, 0.0)  # ejemplo: arco en x=-0.65, centro en y=0
+        # Parámetros de la cancha (ajusta según tu campo)
+        arco_centro = Vector2(0.65, 0.0)  # Arco propio (ahora en el lado derecho)
+        arco_rival = Vector2(-0.65, 0.0)  # Arco rival (lado izquierdo)
+        distancia_defensa = 0.26
+        distancia_ataque = 0.16  # Distancia para cambiar a modo ataque
 
-        # Distancia deseada desde el arco (ajusta según tu estrategia)
-        distancia = 0.26
+        # Distancia del robot a la pelota
+        dx = ball.position.x - robot.pose.position.x
+        dy = ball.position.y - robot.pose.position.y
+        dist_robot_ball = math.hypot(dx, dy)
 
-        # Calcula el target sobre la recta arco-pelota
-        target = punto_sobre_recta_arco_pelota(ball.position, arco_centro, distancia)
+        # Cambiar de modo según la distancia a la pelota
+        if dist_robot_ball < distancia_ataque:
+            self.modo_ataque = True
+        elif dist_robot_ball > distancia_ataque * 1.5:
+            self.modo_ataque = False
 
-        # Limitar target a la zona de defensa (por ejemplo, x <= 0)
-        target.x = max(target.x, 0.0)  # Cambia 0.0 por el límite de tu zona si es necesario
+        if self.modo_ataque:
+            # Target: predicción de intersección con la pelota
+            v_robot = 1.0  # velocidad máxima del robot (ajusta según tu robot)
+            target = predecir_interseccion_pelota(
+                robot.pose.position, ball.position, ball_vel, v_robot
+            )
+        else:
+            # Target: sobre la línea entre pelota y arco propio
+            target = punto_sobre_recta_arco_pelota(ball.position, arco_centro, distancia_defensa)
+            # Limitar target a la zona de defensa (por ejemplo, x >= 0)
+            target.x = max(target.x, 0.0)
 
         return self.controller.goto_point_lim(robot.pose, target)
-
 
 def punto_sobre_recta_arco_pelota(ball_pos: Vector2, arco_pos: Vector2, distancia: float) -> Vector2:
     """
@@ -63,6 +78,30 @@ def punto_sobre_recta_arco_pelota(ball_pos: Vector2, arco_pos: Vector2, distanci
     # Punto a 'distancia' del arco sobre la recta
     x = arco_pos.x + ux * distancia
     y = arco_pos.y + uy * distancia
+    return Vector2(x, y)
+
+def predecir_interseccion_pelota(robot_pos: Vector2, ball_pos: Vector2, ball_vel: Vector2, v_robot: float) -> Vector2:
+    """
+    Calcula el punto donde el robot puede interceptar la pelota,
+    considerando la velocidad de ambos.
+    """
+    dx = ball_pos.x - robot_pos.x
+    dy = ball_pos.y - robot_pos.y
+    a = ball_vel.x
+    b = ball_vel.y
+    A = (a**2 + b**2) - v_robot**2
+    B = 2 * (dx * a + dy * b)
+    C = dx**2 + dy**2
+    discriminante = B**2 - 4*A*C
+    if discriminante < 0 or abs(A) < 1e-6:
+        return ball_pos
+    t1 = (-B + math.sqrt(discriminante)) / (2*A)
+    t2 = (-B - math.sqrt(discriminante)) / (2*A)
+    t = min([ti for ti in [t1, t2] if ti > 0], default=None)
+    if t is None:
+        return ball_pos
+    x = ball_pos.x + a * t
+    y = ball_pos.y + b * t
     return Vector2(x, y)
 
 

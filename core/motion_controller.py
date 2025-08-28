@@ -64,7 +64,11 @@ class DifferentialController:
         distance = math.hypot(dx, dy)
         angle_to_target = math.atan2(dy, dx)
         angle_err = normalize_angle(angle_to_target - robot.theta)
-        
+
+        # --- ZONA MUERTA ---
+        #if distance < 0.05:  # 3 cm de tolerancia
+        #    return 0.0, 0.0
+            
 
         if abs(angle_err) > 1.5:
             turn = self.k_turn * angle_err
