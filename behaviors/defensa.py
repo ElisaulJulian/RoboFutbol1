@@ -33,56 +33,36 @@ class Defensa(Behavior):
         self.last_ball_pos = Vector2(ball.position.x, ball.position.y)
         self.last_time = current_time
 
-        # Velocidad máxima del robot (ajusta según tu robot)
-        v_robot = 1.0  # metros/segundo, por ejemplo
+        # Centro del arco propio (ajusta según tu campo)
+        arco_centro = Vector2(0.65, 0.0)  # ejemplo: arco en x=-0.65, centro en y=0
 
-        # Calcular punto de intersección
-        target = predecir_interseccion_pelota(
-            robot.pose.position, ball.position, ball_vel, v_robot
-        )
+        # Distancia deseada desde el arco (ajusta según tu estrategia)
+        distancia = 0.26
 
-         # Limitar target a la zona de defensa (por ejemplo, x <= 0)
+        # Calcula el target sobre la recta arco-pelota
+        target = punto_sobre_recta_arco_pelota(ball.position, arco_centro, distancia)
+
+        # Limitar target a la zona de defensa (por ejemplo, x <= 0)
         target.x = max(target.x, 0.0)  # Cambia 0.0 por el límite de tu zona si es necesario
 
         return self.controller.goto_point_lim(robot.pose, target)
 
 
-def predecir_interseccion_pelota(robot_pos: Vector2, ball_pos: Vector2, ball_vel: Vector2, v_robot: float) -> Vector2:
+def punto_sobre_recta_arco_pelota(ball_pos: Vector2, arco_pos: Vector2, distancia: float) -> Vector2:
     """
-    Calcula el punto donde el robot puede interceptar la pelota, 
-    considerando la velocidad de ambos.
+    Devuelve el punto sobre la recta arco-pelota a 'distancia' del arco.
     """
-    # Diferencias iniciales
-    dx = ball_pos.x - robot_pos.x
-    dy = ball_pos.y - robot_pos.y
-
-    # Velocidad relativa
-    a = ball_vel.x
-    b = ball_vel.y
-
-    # Coeficientes para la ecuación cuadrática At^2 + Bt + C = 0
-    A = (a**2 + b**2) - v_robot**2
-    B = 2 * (dx * a + dy * b)
-    C = dx**2 + dy**2
-
-    # Resolver la cuadrática
-    discriminante = B**2 - 4*A*C
-    if discriminante < 0 or abs(A) < 1e-6:
-        # No hay solución real o A ≈ 0 (evitar división por cero)
-        return ball_pos
-
-    t1 = (-B + math.sqrt(discriminante)) / (2*A)
-    t2 = (-B - math.sqrt(discriminante)) / (2*A)
-
-    # Tomar el menor t positivo
-    t = min([ti for ti in [t1, t2] if ti > 0], default=None)
-    if t is None:
-        return ball_pos
-
-    # Punto de intersección
-    x = ball_pos.x + a * t
-    y = ball_pos.y + b * t
+    dx = ball_pos.x - arco_pos.x
+    dy = ball_pos.y - arco_pos.y
+    norm = math.hypot(dx, dy)
+    if norm == 0:
+        return Vector2(arco_pos.x, arco_pos.y)
+    # Vector unitario de arco a pelota
+    ux = dx / norm
+    uy = dy / norm
+    # Punto a 'distancia' del arco sobre la recta
+    x = arco_pos.x + ux * distancia
+    y = arco_pos.y + uy * distancia
     return Vector2(x, y)
-    
-    
-    
+
+
