@@ -55,8 +55,8 @@ def main(team_color_yellow: bool = False, robot0: int = 0, robot1: int = 1, robo
             ball = to_framework_ball(field_data)
 
             manager.set_behavior(robot1, Defensa())
-            manager.set_behavior(robot0, Goleador())
-            manager.set_behavior(robot2, Arquero())
+            #manager.set_behavior(robot0, Goleador())
+            #manager.set_behavior(robot2, Arquero())
 
             wheel_cmds = manager.step_all(robots, ball)
             for rid, (ls, rs) in wheel_cmds.items():

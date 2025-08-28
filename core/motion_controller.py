@@ -161,11 +161,7 @@ class DifferentialController:
                 return 0,0
             if ball_pos.x > 0:
                 return -speed, -speed
-<<<<<<< HEAD
             
-=======
-            return self.turn_180(turn_speed=30.0)
->>>>>>> f083b4c6b6e68d6a8c95d06c933b24110e9e243b
 
         # Si la orientación está dentro de un umbral pequeño, avanza hacia Y
         if abs(angle_err) < 0.1:
